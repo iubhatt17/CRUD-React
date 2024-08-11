@@ -1,0 +1,11 @@
+.heading {
+    text-align: center;
+}
+
+.p-fileupload-file-badge {
+    display: none !important;
+}
+
+.p-fileupload-row [data-pc-section="actions"] {
+    display: none !important;
+}
