@@ -5,7 +5,6 @@ const axiosInterceptor = axios.create();
 
 const useAxiosLoader = (): boolean => {
   const [counter, setCounter] = useState(0);
-  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   const inc = useCallback(() => setCounter((counter) => counter + 1), []);
   const dec = useCallback(() => setCounter((counter) => counter - 1), []);
@@ -27,36 +26,7 @@ const useAxiosLoader = (): boolean => {
         switch (status) {
           case 400:
             // Handle 400 error
-            break;
-          case 401:
-            // Handle 401 error
-            setShouldRedirect(true);
-            break;
-          case 402:
-          try {
-            const res = await axios.get(
-              `${process.env.REACT_APP_API_BASE_URL}/auth/token`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem(
-                    "refresh_token"
-                  )}`,
-                },
-              }
-            );
-
-            const newAccessToken = res.data.data.access_token;
-
-            localStorage.setItem("access_token", newAccessToken);
-            // Retry original request with new token
-            const originalRequest: any = error.config;
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            return axios(originalRequest);
-          } catch (error) {
-            console.error("Error refreshing token:", error);
-            throw error;
-          }
-            
+            break;    
           case 403:
             // Handle 403 error
             break;
@@ -85,13 +55,6 @@ const useAxiosLoader = (): boolean => {
       axiosInterceptor.interceptors.response.eject(responseInterceptor);
     };
   }, [interceptors]);
-
-  useEffect(() => {
-    if (shouldRedirect) {
-      setCounter(0);
-      setShouldRedirect(false);
-    }
-  }, [shouldRedirect]);
 
   return counter > 0;
 };

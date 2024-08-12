@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { FileUpload } from 'primereact/fileupload';
@@ -11,6 +11,7 @@ import './AddProduct.css'
 import { useNavigate } from 'react-router';
 import { InputNumber } from 'primereact/inputnumber';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { Toast } from 'primereact/toast';
 
 interface Props {}
 
@@ -34,6 +35,8 @@ const AddProduct = (props: Props) => {
 
   const api = new Api();
   const navigate = useNavigate();
+
+  const toast = useRef<any>(null);
   
   const [formData, setFormData] = useState<ProductFormStateValues>({
     title: '',
@@ -164,10 +167,15 @@ const AddProduct = (props: Props) => {
     try {
       setLoading(true)
       const res = await api.post("/product", payload);
-      setLoading(false)
-      navigate('/')
+      if (res.status === 'success') {
+        setLoading(false)
+        navigate('/')
+      } else {
+        toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
+      }
     } catch (error) {
       console.error(error);
+      toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
     }
   };
 
@@ -182,6 +190,8 @@ const AddProduct = (props: Props) => {
       <div className='heading'>
         <h1>Add Product Details</h1>
       </div>
+
+      <Toast ref={toast} position="top-right" />
       
       <div className='form-cotainer'>
         <form onSubmit={handleSubmit} className="p-fluid">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { FileUpload } from 'primereact/fileupload';
@@ -11,6 +11,7 @@ import S3 from 'aws-sdk/clients/s3';
 import './EditProduct.css'
 import { useNavigate, useParams } from 'react-router';
 import { InputNumber } from 'primereact/inputnumber';
+import { Toast } from 'primereact/toast';
 
 interface Props  {}
 
@@ -34,6 +35,8 @@ const EditProduct = (props: Props) => {
 
   const api = new Api();
   const navigate = useNavigate();
+
+  const toast = useRef<any>(null);
 
   const { id } = useParams();
   
@@ -69,14 +72,13 @@ const EditProduct = (props: Props) => {
    * Get Api call
    */
   const getProductById = async () => {
-    console.log('id ' , id)
     try {
       const res = await api.get(`/product/${id}`);
-      if (res.status === 200) {
+      if (res.data.status === 'success') {
         const resData = {
-          title: res.data.title,
-          description: res.data.description,
-          price: res.data.price
+          title: res.data.res.title,
+          description: res.data.res.description,
+          price: res.data.res.price
         }
 
         setFormData((prev: any) => ({
@@ -84,15 +86,13 @@ const EditProduct = (props: Props) => {
           ...resData
         }));
 
-        setFileUrl(res.data.product_image_url)
-
-        console.log('formData ' , formData)
-
+        setFileUrl(res.data.res.product_image_url)
+      } else {
+        toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
       } 
-      
-      // 
     } catch (error) {
       console.error(error);
+      toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
     }
   };
 
@@ -202,10 +202,14 @@ const EditProduct = (props: Props) => {
   const updateProductData = async (payload: any) => {    
     try {
       const res = await api.put(`/product/${id}`, payload);
-      console.log('res ' , res)
-      navigate('/')
+      if (res.data.status === 'success') {
+        navigate('/')
+      } else {
+        toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
+      }
     } catch (error) {
       console.error(error);
+      toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
     }
   };
 
@@ -214,6 +218,8 @@ const EditProduct = (props: Props) => {
       <div className='heading'>
         <h1>Edit Product Details</h1>
       </div>
+
+      <Toast ref={toast} position="top-right" />
       
       <div className='form-cotainer'>
         <form onSubmit={handleSubmit} className="p-fluid">
@@ -268,7 +274,7 @@ const EditProduct = (props: Props) => {
                 className={classNames({ 'p-invalid': imageErrors.image }, 'mt-2')}
                 auto
             />
-            {imageErrors.image && <small className="p-error">{imageErrors.image}</small>}
+            {/* {imageErrors.image && <small className="p-error">{imageErrors.image}</small>} */}
           </div>
           
           <Button label="Submit" type="submit" disabled={uploading} className="p-mt-2 mt-5" />

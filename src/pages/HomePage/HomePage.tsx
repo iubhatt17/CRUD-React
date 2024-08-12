@@ -10,12 +10,15 @@ import { ProductModal } from "../../services/Interface/ProductModal";
 import './HomePage.css';
 import { useNavigate } from 'react-router';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { Toast } from 'primereact/toast';
 interface Props  {}
 
 const Home = (props: Props) => {
 
   const navigate = useNavigate();
   const api = new Api();
+
+  const toast = useRef<any>(null);
 
   const [productList, setProductList] = useState<ProductModal[]>([]);
   const [productCount, setProductCount] = useState(0);
@@ -45,11 +48,16 @@ const Home = (props: Props) => {
     try {
       setLoading(true);
       const res = await api.get("/product", false, params);
-      setProductList(res.data.products);
-      setProductCount(res.data.totalRecords);
-      setLoading(false);
+      if (res.data.status === 'success') {
+        setProductList(res.data.products);
+        setProductCount(res.data.totalRecords);
+        setLoading(false);
+      } else {
+        toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
+      }
     } catch (error) {
       console.error(error);
+      toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
     }
   };
 
@@ -60,9 +68,14 @@ const Home = (props: Props) => {
     try {
       setLoading(true);
       const res = await api.delete(`/product/${_id}`, false);
-      getAllProducts();
+      if (res.data.status === 'success') {
+        getAllProducts();
+      } else {
+        toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
+      }
     } catch (error) {
       console.error(error);
+      toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
     }
   };
 
@@ -112,10 +125,15 @@ const Home = (props: Props) => {
     try {
       setLoading(true);
       const res = await api.get("/product", false, params);
-      setProductList(res.data.products);
-      setProductCount(res.data.totalRecords);
-      setLoading(false);
+      if (res.data.status === 'success') {
+        setProductList(res.data.products);
+        setProductCount(res.data.totalRecords);
+        setLoading(false);
+      } else {
+        toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
+      }
     } catch (error) {
+      toast.current.show({severity:'error', summary: 'Error', detail:'Something went wrong!', life: 3000});
       console.error(error);
     }
   }
@@ -159,7 +177,6 @@ const Home = (props: Props) => {
     setRows(event.rows);
     
     if (globalFilterValue !== '') {
-      console.log('event.page ' , event.page)
       setSearchController({page: event.page});
       onSearchKeyWord(globalFilterValue, event.page)
     } else {
@@ -173,6 +190,8 @@ const Home = (props: Props) => {
       <div className='heading'>
         <h1>Product List</h1>
       </div>
+
+      <Toast ref={toast} position="top-right" />
     
       {isLoading && (
         <div className="loader-container">
