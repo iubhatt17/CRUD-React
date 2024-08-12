@@ -6,6 +6,15 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, you can run:
 
+## Installation
+
+```bash
+$ npm install
+```
+
+## Create .env file at root folder
+Add REACT_APP_API_BASE_URL, REACT_APP_AWS_ACCESS_KEY, REACT_APP_AWS_SECRET_KEY variables in .env file
+
 ### `npm start`
 
 Runs the app in the development mode.\
